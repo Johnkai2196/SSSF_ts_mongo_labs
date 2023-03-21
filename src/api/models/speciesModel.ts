@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import {Species} from '../../interfaces/Species';
 // TODO: Schema for species model
-// based on iterface Species located in src/interfaces/Species.ts
+// based on interface Species located in src\interfaces\Species.ts
 
 const speciesSchema = new mongoose.Schema<Species>({
   species_name: {
