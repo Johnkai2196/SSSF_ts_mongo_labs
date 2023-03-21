@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import {Animal} from '../../interfaces/Animal';
-// TODO: Schema for Animal model
-// based on iterface Animal located in src/interfaces/Animal.ts
+// TODO: Schema for animal model
+// based on interface Animal located in src\interfaces\Animal.ts
 
 const animalSchema = new mongoose.Schema<Animal>({
   animal_name: {

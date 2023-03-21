@@ -1,9 +1,10 @@
+import {NextFunction, Request, Response} from 'express';
 import {validationResult} from 'express-validator';
-import {Request, Response, NextFunction} from 'express';
 import CustomError from '../../classes/CustomError';
-import {Species} from '../../interfaces/Species';
-import speciesModel from '../models/speciesModel';
 import DBMessageResponse from '../../interfaces/DBMessageResponse';
+import {Species} from '../../interfaces/Species';
+import rectangleBounds from '../../utils/rectangleBounds';
+import speciesModel from '../models/speciesModel';
 // TODO: Controller for species model
 
 const speciesListget = async (
@@ -22,16 +23,15 @@ const speciesListget = async (
     next(new CustomError((error as Error).message, 500));
   }
 };
-
 const speciesGet = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const messages = errors
+      const message = errors
         .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
+        .map((error) => `${error.param}: ${error.msg}`)
+        .join(' ');
+      throw new CustomError(message, 400);
     }
     const species = await speciesModel
       .findById(req.params.id)
@@ -54,16 +54,14 @@ const speciesPost = async (
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const messages = errors
+      const message = errors
         .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
+        .map((error) => `${error.param}: ${error.msg}`)
+        .join(' ');
+      throw new CustomError(message, 400);
     }
-
     const species = await speciesModel.create(req.body);
     await species.populate('category');
-
     const output: DBMessageResponse = {
       message: 'Species created',
       data: species,
@@ -83,13 +81,12 @@ const speciesPut = async (
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const messages = errors
+      const message = errors
         .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
+        .map((error) => `${error.param}: ${error.msg}`)
+        .join(' ');
+      throw new CustomError(message, 400);
     }
-
     const species = await speciesModel
       .findByIdAndUpdate(req.params.id, req.body, {new: true})
       .populate('category');
@@ -115,13 +112,12 @@ const speciesDelete = async (
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      const messages = errors
+      const message = errors
         .array()
-        .map((error) => `${error.msg}: ${error.param}`)
-        .join(', ');
-      throw new CustomError(messages, 400);
+        .map((error) => `${error.param}: ${error.msg}`)
+        .join(' ');
+      throw new CustomError(message, 400);
     }
-
     const species = await speciesModel
       .findByIdAndDelete(req.params.id)
       .populate('category');
@@ -139,4 +135,50 @@ const speciesDelete = async (
   }
 };
 
-export {speciesListget, speciesGet, speciesPost, speciesPut, speciesDelete};
+const speciesByAreaGet = async (
+  req: Request<{}, {}, {}, {topRight: string; bottomLeft: string}>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const message = errors
+        .array()
+        .map((error) => `${error.param}: ${error.msg}`)
+        .join(' ');
+      throw new CustomError(message, 400);
+    }
+
+    const {topRight, bottomLeft} = req.query;
+    const [trLat, trLng] = topRight.split(',');
+    const [blLat, blLng] = bottomLeft.split(',');
+    const bounds = rectangleBounds(
+      {lat: trLat, lng: trLng},
+      {lat: blLat, lng: blLng}
+    );
+    const species = await speciesModel.find({
+      location: {
+        $geoWithin: {
+          $geometry: bounds,
+        },
+      },
+    });
+    if (!species) {
+      next(new CustomError('No species found', 404));
+      return;
+    }
+    res.json(species);
+  } catch (error) {
+    next(new CustomError((error as Error).message, 500));
+  }
+};
+
+export default {
+  speciesListget,
+  speciesGet,
+  speciesPost,
+  speciesPut,
+  speciesDelete,
+  speciesByAreaGet,
+};
