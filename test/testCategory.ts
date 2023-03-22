@@ -114,4 +114,4 @@ const deleteCategory = (
   });
 };
 
-export {getCategories, getCategory, postCategory, putCategory};
+export {getCategories, getCategory, postCategory, putCategory, deleteCategory};

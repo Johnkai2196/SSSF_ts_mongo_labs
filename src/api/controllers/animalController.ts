@@ -5,7 +5,6 @@ import CustomError from '../../classes/CustomError';
 import DBMessageResponse from '../../interfaces/DBMessageResponse';
 import {Animal} from '../../interfaces/Animal';
 import animalModel from '../models/animalModel';
-import path from 'path';
 
 const animalListGet = async (
   req: Request,
