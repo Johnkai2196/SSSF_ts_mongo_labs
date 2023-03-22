@@ -1,5 +1,6 @@
 import {Point} from 'geojson';
 import {Document, Types} from 'mongoose';
+import {Category} from './Category';
 
 // TODO: interface for Species
 interface Species extends Document {
@@ -8,4 +9,16 @@ interface Species extends Document {
   image: string;
   location: Point;
 }
-export {Species};
+interface SpeciesOutput {
+  species_name: string;
+  category: Types.ObjectId;
+}
+interface SpeciesTest {
+  _id: string;
+  species_name: string;
+  category: Category;
+  image: string;
+  location: Point;
+}
+
+export {Species, SpeciesOutput, SpeciesTest};

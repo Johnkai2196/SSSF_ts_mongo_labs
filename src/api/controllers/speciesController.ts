@@ -64,7 +64,11 @@ const speciesPost = async (
     await species.populate('category');
     const output: DBMessageResponse = {
       message: 'Species created',
-      data: species,
+      data: {
+        _id: species._id,
+        species_name: species.species_name,
+        category: species.category,
+      },
     };
 
     res.json(output);
@@ -174,7 +178,7 @@ const speciesByAreaGet = async (
   }
 };
 
-export default {
+export {
   speciesListget,
   speciesGet,
   speciesPost,
